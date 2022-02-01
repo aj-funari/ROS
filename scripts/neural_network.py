@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-import cv2
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from data_builder import data_setup
 import time
+import matplotlib.pyplot as plt
 
 class Net(nn.Module):
 
@@ -27,23 +27,44 @@ class Net(nn.Module):
 if __name__ == '__main__':
     DATA = data_setup()
 
-    start = time.perf_counter()
-    DATA.one_folder_img_trainloader()
-    print("One folder execution time: ", time.perf_counter() -start)
-    print(DATA.training_label)
-    
-    start = time.perf_counter()
-    DATA.two_folder_img_trainloader()
-    print("Two folder execution time: ", time.perf_counter() - start)
-    print(DATA.training_label_left)
-    print(DATA.training_label_right)
+    ### CALL FUNCTIONS TO SETUP DATA
+    DATA.one_folder_img_loader()
+    DATA.parse_one_folder()
 
-#net = Net()
+    ### EXECUTION TIME
+    # start = time.perf_counter()
+    # DATA.one_folder_img_loader()
+    # print("One folder execution time: ", time.perf_counter() -start)
 
-#X = torch.rand((28, 28))
-#X = X.view(-1, 28*28)
-#print(net(X))
+    ### NUMBER OF IMAGES
+    count = 0
+    for i in DATA.trainloader:
+        count += 1
+    print("Number of images: ", count)
 
-#img = training_data[0]
-#img = img.view(-1, 768*1024)
-#print(net(img))
+    ### NUMBER OF LABELS
+    count = 0
+    for label in DATA.training_label:
+        count += 1
+    print("Number of labels: ", count)
+
+    # VISUALIZING IMAGES
+    # for data in DATA.trainloader:
+        # print(data.size)
+        # plt.imshow(data, cmap='gray')
+        # plt.show()
+        # break
+
+    ### VISUALIZING LABELS
+    # print(DATA.training_label)
+
+    ### NEURAL NETWORK
+    # net = Net()
+
+    # X = torch.rand((28, 28))
+    # X = X.view(-1, 28*28)
+    # print(net(X))
+
+    # img = training_data[0]
+    # img = img.view(-1, 768*1024)
+    # print(net(img))

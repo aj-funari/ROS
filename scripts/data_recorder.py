@@ -6,7 +6,7 @@ from sensor_msgs.msg import Image # message type for image
 import cv2 
 import os
 from cv_bridge import CvBridge, CvBridgeError
-from datetime import datetime
+from datetime import datetime 
 
 bridge = CvBridge()
 
@@ -72,10 +72,3 @@ class data_recorder(object):
 if __name__ =='__main__':
     data_recorder()
     rospy.spin()
-
-
-
-
-
-
-
