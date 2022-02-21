@@ -14,7 +14,6 @@ class one_folder_setup():
 
     def folder_img_loader(self):
         DATADIR = '/home/aj/catkin_ws/src/ros_gazebo/scripts/images/left'
-        count = 0
 
         print("Setting up data for neural network!")
 
@@ -55,8 +54,8 @@ class one_folder_setup():
     def resize(self, img): 
         # Orignial image = 768x1024
         # Rescale down to 32x32
-        width = img.shape[1] / 32  # x coordinate
-        height = img.shape[0] / 24
+        width = round(img.shape[1] / 32)  # x coordinate
+        height = round(img.shape[0] / 24)
         # print("Resized image:", height, "x", width)
         dim = (width, height)
         # resize image
