@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from tabnanny import check
 import numpy as np
 import matplotlib.pyplot as plt
 import os
