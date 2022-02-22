@@ -1,12 +1,10 @@
 #!/usr/bin/env python
-
-import numpy as np
-import matplotlib.pyplot as plt
 import os
 import cv2
 import torch
-import time
 import random
+import numpy as np
+import matplotlib.pyplot as plt
 
 class one_folder_setup():
     def __init__(self):
@@ -71,37 +69,32 @@ class one_folder_setup():
         rand_start = 0
         rand_end = batch_size
         check_rand_num = {}
-        count = 0
-
-        batch_size = int(len(self.trainloader) / num_batch)
-        print("batch size:", batch_size)
+ 
         for i in range(num_batch):
             for j in range(batch_size):  
                 while len(check_rand_num) < batch_size:
                     x = random.randrange(rand_start, rand_end)
-                    # print("random number:", x)
-                    # add random number to dictionary and key value random number
-                    check_rand_num[x] = x
-                    print("random number dictionary", check_rand_num)
+
                     if x not in check_rand_num.keys():  # if random number is not in dictorary, add random image
                         tmp.append(self.trainloader[x])  # append imgage to temporary list
-                    # print("check values:", check_rand_num.values())
-                    # tmp.append(self.trainloader) 
-                    count += 1
-                    if count == 10:
-                        break
+                    
+                    check_rand_num[x] = x  # add random number to dictionary 
+            
+            ### CHECK RANDOM NUMBERS
+            # print("random numbers:", check_rand_num)
+            # print("sorted number:", sorted(check_rand_num))
+            
             rand_start += batch_size
             rand_end += batch_size
-            print("number of images:", len(tmp))
 
             epoch.append(tmp) # append list to create one epoch of data
-            tmp.clear()  # clear temporary list
+            tmp.clear()  # clear temporary list for next batch
+            check_rand_num.clear()  # clear dictionary for next batch
 
-            print("size of check dictionary", len(check_rand_num))
-            check_rand_num.clear()
-            break
-
-        print("number of batches:", len(epoch))
+        ###  PRINT INFORMATION
+        print("number of batches", num_batch)
+        print("size of batch:", batch_size)
+        print("length of epoch:", len(epoch))
 
 if __name__ == "__main__":
     DATA = one_folder_setup()
@@ -139,3 +132,5 @@ if __name__ == "__main__":
 
     ### BATCHES
     DATA.num_batches(10)
+    DATA.num_batches(15)
+    DATA.num_batches(20)
