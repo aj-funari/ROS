@@ -108,9 +108,6 @@ class ResNet(nn.Module):  # ResNet50 = [3, 4, 6, 3]
         identity_downsample = None
         layers = []
 
-        # Either if we half the input space for ex, 56x56 -> 28x28 (stride=2), or channels changes
-        # we need to adapt the Identity (skip connection) so it will be able to be added
-        # to the layer that's ahead
         if stride != 1 or self.in_channels != intermediate_channels * 4:
             identity_downsample = nn.Sequential(
                 nn.Conv2d(
@@ -175,35 +172,25 @@ if __name__ == '__main__':
     ### CREATE VARIABLE FOR CLASS
     DATA = one_folder_setup()
 
-    ### VISUALIZING IMAGES
+    ### LOAD IMAGES
     DATA.folder_img_loader()
-    # for data in DATA.trainloader:
-    #     print(data.size)
-    #     plt.imshow(data, cmap='gray')
-    #     plt.show()
-    #     break
 
-    ### VISUALIZING LABELS
-    # DATA.parse_folder()
-    # for label in DATA.training_label:
-        # print(label)
-    
-    ### NEURAL NETWORK   
-    # model = Net(32*32*3, 2)
-    # for tensor in DATA.trainloader:
-    #     tensor = tensor.view(1, -1)
-    #     # print("Flattened tensor:", tensor)
-    #     tensor = tensor.to(torch.float32)
-    #     out = model(tensor)
-    #     print(out)
+    ### NUMBER OF IMAGES IN TRAINING SET
+    # print(len(DATA.trainloader))
+
+    ### CREATE EPOCHS
+    DATA.num_batches(10)
+    # print(len(DATA.epoch))    # --> 10 
+    # for batch in DATA.epoch:  
+    #     print(len(batch))     # --> 0?
 
     ### FEED DATA THROUGH NEURAL NETWORK
     net = ResNet50(img_channels=3, num_classes=2)
+    
     test_tensor = torch.randn(1, 3, 224, 224)  # color dimension, height, width
-    out = (net(test_tensor))
-    print(out, "\nTEST TENSOR THROUGH NEURAL NETWORK!")
+    # out = (net(test_tensor))
+    # print(out, "\nTEST TENSOR THROUGH NEURAL NETWORK!")
 
     tensor = DATA.trainloader[0]  # [1, 3, 224 , 224]
     out = net(tensor)
     print(out, "\nROS IMAGE THROUGH NEURAL NETWORK!")
-    

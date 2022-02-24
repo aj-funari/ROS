@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import os
 import cv2
 import torch
@@ -11,6 +12,7 @@ class one_folder_setup():
     def __init__(self):
         self.trainloader = []
         self.training_label = []
+        self.epoch = []
 
     def folder_img_loader(self):
         DATADIR = '/home/aj/catkin_ws/src/ros_gazebo/scripts/images/left'
@@ -60,7 +62,6 @@ class one_folder_setup():
 
     def num_batches(self, num_batch):
         batch_size = int(len(self.trainloader) / num_batch)
-        epoch = []
         tmp = []
         rand_start = 0
         rand_end = batch_size
@@ -83,14 +84,17 @@ class one_folder_setup():
             rand_start += batch_size
             rand_end += batch_size
 
-            epoch.append(tmp) # append list to create one epoch of data
+            self.epoch.append(tmp) # append list to create one epoch of data
+            # print(self.epoch)
             tmp.clear()  # clear temporary list for next batch
             check_rand_num.clear()  # clear dictionary for next batch
 
         ###  PRINT INFORMATION
         print("number of batches", num_batch)
         print("size of batch:", batch_size)
-        print("length of epoch:", len(epoch))
+        print("length of epoch:", len(self.epoch))
+
+        print(self.epoch)  # Why are the images disappearing from list?
 
 if __name__ == "__main__":
     DATA = one_folder_setup()
@@ -118,10 +122,10 @@ if __name__ == "__main__":
 
     # VISUALIZING IMAGES
     # for data in DATA.trainloader:
-        # print(data.size)
-        # plt.imshow(data, cmap='gray')
-        # plt.show()
-        # break
+    #     print(data.size)
+    #     plt.imshow(data, cmap='gray')
+    #     plt.show()
+    #     break
 
     ### VISUALIZING LABELS
     # print(DATA.training_label)
