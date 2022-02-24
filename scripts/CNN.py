@@ -3,6 +3,7 @@
 import re
 import cv2
 import time
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -162,7 +163,7 @@ def test():
 
 if __name__ == '__main__':
     ### TEST RESNET ARCHITECTURE
-    test()
+    # test()
 
     ### MOVE MODEL/COMPUTATIONS TO GPU
     # if torch.cuda.is_available():
@@ -196,8 +197,13 @@ if __name__ == '__main__':
     #     out = model(tensor)
     #     print(out)
 
-    ### FEED DATA THROUGH RESNET
-    net = ResNet50(img_channels=3, num_classes=10)
-    y = net(DATA.trainloader[0])
-    print(y)
+    ### FEED DATA THROUGH NEURAL NETWORK
+    net = ResNet50(img_channels=3, num_classes=2)
+    test_tensor = torch.randn(1, 3, 224, 224)  # color dimension, height, width
+    out = (net(test_tensor))
+    print(out, "\nTEST TENSOR THROUGH NEURAL NETWORK!")
+
+    tensor = DATA.trainloader[0]  # [1, 3, 224 , 224]
+    out = net(tensor)
+    print(out, "\nROS IMAGE THROUGH NEURAL NETWORK!")
     

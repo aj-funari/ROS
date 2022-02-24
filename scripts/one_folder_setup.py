@@ -2,6 +2,7 @@
 import os
 import cv2
 import torch
+import torchvision
 import random
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,10 +20,11 @@ class one_folder_setup():
         for img in os.listdir(DATADIR):
             try:
                 img_array = cv2.imread(os.path.join(DATADIR, img))  # <type 'numpy.ndarray'>
-                img_resize = self.resize(img_array)  
-                img_tensor = torch.from_numpy(img_resize)  # <class 'torch.Tensor')
-                self.trainloader.append(img_tensor)
-
+                img_resize = self.resize(img_array)
+                img_tensor = torch.from_numpy(img_resize).float()  # <class 'torch.Tensor')
+                tensor = img_tensor.reshape([1, 3, 224, 224])
+                self.trainloader.append(tensor)
+            
             except Exception as e:
                 pass 
 
@@ -50,16 +52,10 @@ class one_folder_setup():
                 action = [x,z]
                 self.training_label.append(action)
 
-    def resize(self, img): 
-        # Orignial image = 768x1024
-        # Rescale down to 32x32
-        width = int(img.shape[1] / 32)  # x coordinate
-        height = int(img.shape[0] / 24)
-        # print("Resized image:", height, "x", width)
-        dim = (width, height)
-        # print(dim)
-        # resize image
+    def resize(self, img): # image input size = 768x1024
+        dim = (224, 224) # rescale down to 224x224
         img = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
+        # print(img.shape)
         return(img)
 
     def num_batches(self, num_batch):
