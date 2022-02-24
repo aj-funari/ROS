@@ -83,9 +83,9 @@ class one_folder_setup():
             
             rand_start += batch_size
             rand_end += batch_size
-
-            self.epoch.append(tmp) # append list to create one epoch of data
-            # print(self.epoch)
+            
+            ### ADD BATCHES OF IMAGES TOGETHER
+            self.epoch += tmp
             tmp.clear()  # clear temporary list for next batch
             check_rand_num.clear()  # clear dictionary for next batch
 
@@ -93,8 +93,6 @@ class one_folder_setup():
         print("number of batches", num_batch)
         print("size of batch:", batch_size)
         print("length of epoch:", len(self.epoch))
-
-        print(self.epoch)  # Why are the images disappearing from list?
 
 if __name__ == "__main__":
     DATA = one_folder_setup()
@@ -132,5 +130,5 @@ if __name__ == "__main__":
 
     ### BATCHES
     DATA.num_batches(10)
-    DATA.num_batches(15)
-    DATA.num_batches(20)
+    # DATA.num_batches(15)
+    # DATA.num_batches(20)
