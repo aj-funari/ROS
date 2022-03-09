@@ -187,18 +187,19 @@ if __name__ == '__main__':
     ### FEED DATA THROUGH NEURAL NETWORK
     net = ResNet50(img_channels=3, num_classes=2)
     
-    test_tensor = torch.randn(1, 3, 224, 224)  # color dimension, height, width
+    test_tensor = torch.randn(1, 3, 224, 224)  # color dCn  imension, height, width
     # out = (net(test_tensor))
     # print(out, "\nTEST TENSOR THROUGH NEURAL NETWORK!")
 
     tensor = DATA.trainloader[0]  # [1, 3, 224 , 224]
-    out = net(tensor)
-    print(out, "\nROS IMAGE THROUGH NEURAL NETWORK!")
+    print("ROS IMAGE THROUGH NEURAL NETWORK!")
+    print(net(tensor))
 
-    count = 0 
-    for batch in DATA.epoch:
-        for image in batch:
+    # count = 0
+    for batch in DATA.epoch:  # loop through 10 batches in epoch
+        for image in batch:   # for each image in batch
             image = image.reshape(1, 3, 224, 224)
             print("neural net output:", net(image))
-            count += 1
-        print("batch size:", count)
+            # count += 1
+            # if count == 10:
+                # exit()
