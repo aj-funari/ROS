@@ -9,6 +9,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 from one_folder_setup import one_folder_setup
+import time
 
 class block(nn.Module):
     def __init__(self, in_channels, intermediate_channels, identity_downsample=None, stride=1):
@@ -159,6 +160,7 @@ def test():
     print(("ResNet152 output:", y))
 
 if __name__ == '__main__':
+    start_time = time.perf_counter()
     ### TEST RESNET ARCHITECTURE
     # test()
 
@@ -195,11 +197,19 @@ if __name__ == '__main__':
     print("ROS IMAGE THROUGH NEURAL NETWORK!")
     print(net(tensor))
 
-    # count = 0
+    x = 1
+    num = 1
     for batch in DATA.epoch:  # loop through 10 batches in epoch
         for image in batch:   # for each image in batch
             image = image.reshape(1, 3, 224, 224)
-            print("neural net output:", net(image))
-            # count += 1
-            # if count == 10:
-                # exit()
+            print("tensor out #", x, net(image))
+            x += 1
+
+            if x == 224:
+                print("Just finished training batch #", num)
+                time.sleep(5)
+                num += 1
+                x = x - 224
+    print("Neural Network training time: ", (time.perf_counter() - start_time))
+
+    ### 

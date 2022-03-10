@@ -12,7 +12,8 @@ class one_folder_setup():
     def __init__(self):
         self.trainloader = []
         self.training_label = []
-        self.epoch = []
+        self.batch_epoch = []
+        self.label_epoch = []
 
     def folder_img_loader(self):
         DATADIR = '/home/aj/catkin_ws/src/ros_gazebo/scripts/images/left'
@@ -60,22 +61,26 @@ class one_folder_setup():
         # print(img.shape)
         return(img)
 
-    def num_batches(self, num_batch):
+    def rand_batches_labels (self, num_batch):
         batch_size = int(len(self.trainloader) / num_batch)
-        tmp = []
+        batches_tmp = []
+        labels_tmp = []
         rand_start = 0
         rand_end = batch_size
         check_rand_num = {}
  
         for i in range(num_batch):
-            for j in range(batch_size):  
+            for j in range(batch_size):
+                i = 1
                 while len(check_rand_num) < batch_size:
                     x = random.randrange(rand_start, rand_end)
-
                     if x not in check_rand_num.keys():  # if random number is not in dictorary, add random image
-                        tmp.append(self.trainloader[x])  # append imgage to temporary list
-                    
-                    check_rand_num[x] = x  # add random number to dictionary 
+                        check_rand_num[x] = x # add num to check rand num list 
+                        batches_tmp.append(self.trainloader[x])  # append imgage to temporary list
+                        labels_tmp.append(self.training_label[x]) # append label to temporary list
+                        print("appended random image/label #", i)
+                        print(self.training_label[x], "#", i)
+                        i += 1
             
             ### CHECK RANDOM NUMBERS
             # print("random numbers:", check_rand_num)
@@ -85,14 +90,23 @@ class one_folder_setup():
             rand_end += batch_size
             
             ### ADD BATCHES OF IMAGES TOGETHER
-            self.epoch += tmp
-            tmp.clear()  # clear temporary list for next batch
-            check_rand_num.clear()  # clear dictionary for next batch
+            self.batch_epoch += batches_tmp
+            batches_tmp.clear()  # clear temporary list for next batch
+
+            ### ADD BATCHES OF LABELS TOGETHER
+            self.label_epoch += labels_tmp
+            labels_tmp.clear()
+
+            ### CLEAR CHECK RAND NUM LIST
+            check_rand_num.clear()  # clear the dictionary for next batch
+
 
         ###  PRINT INFORMATION
         print("number of batches", num_batch)
-        print("size of batch:", batch_size)
-        print("length of epoch:", len(self.epoch))
+        print("size of each batch in batch epoch:", batch_size)
+        print("size of batch epoch:", len(self.batch_epoch))
+        # print("size of each batch in label epoch:",len(self.label_epoch[0]) )  
+        # print("size of label epoch:", len(self.label_epoch))  
 
 if __name__ == "__main__":
     DATA = one_folder_setup()
@@ -129,6 +143,6 @@ if __name__ == "__main__":
     # print(DATA.training_label)
 
     ### BATCHES
-    DATA.num_batches(10)
+    DATA.rand_batches_labels(10)
     # DATA.num_batches(15)
     # DATA.num_batches(20)
