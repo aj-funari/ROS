@@ -176,12 +176,13 @@ if __name__ == '__main__':
 
     ### LOAD IMAGES
     DATA.folder_img_loader()
+    DATA.parse_folder()
 
     ### NUMBER OF IMAGES IN TRAINING SET
     # print(len(DATA.trainloader))
 
     ### CREATE EPOCHS
-    DATA.num_batches(10)
+    DATA.rand_batches_labels(10)
     # print(len(DATA.epoch))    # --> 10 
     # for batch in DATA.epoch:  
     #     print(len(batch))     # --> 0?
@@ -197,19 +198,37 @@ if __name__ == '__main__':
     print("ROS IMAGE THROUGH NEURAL NETWORK!")
     print(net(tensor))
 
+    print("TRAIN FULL NEURAL NETWORK!")
     x = 1
     num = 1
-    for batch in DATA.epoch:  # loop through 10 batches in epoch
+    x_error = 0
+    z_error = 0
+    lst = []
+    for batch in DATA.batch_epoch:  # loop through 10 batches in epoch
         for image in batch:   # for each image in batch
+            start_time = time.perf_counter()
             image = image.reshape(1, 3, 224, 224)
-            print("tensor out #", x, net(image))
-            x += 1
 
-            if x == 224:
+            ### CALCULATING ERROR & ACCURACY
+            out = net(image)
+            lst = out.tolist()
+            target = DATA.training_label[x]
+
+            x_error = float(target[0]) - float(out[0][0])
+            z_error = float(target[1]) - float(out[0][1])
+            print("x error:", x_error)
+            print("z_error:", z_error)
+
+            print("x accurracy:", round(x_error * 100, 2), "%")
+            print("z accurracy:", round(z_error * 100, 2), "%")
+
+            ### PRINTING TRAINING TIME OF NEURAL NETWORK
+            x += 1
+            if x == len(batch):
                 print("Just finished training batch #", num)
+                print("Training time of batch #", num, (start_time-time.perf_counter()))
                 time.sleep(5)
                 num += 1
-                x = x - 224
-    print("Neural Network training time: ", (time.perf_counter() - start_time))
+                x = x - len(batch)
 
-    ### 
+    print("Neural Network training time: ", (time.perf_counter() - start_time))

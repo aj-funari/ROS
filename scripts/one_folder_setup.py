@@ -80,7 +80,7 @@ class one_folder_setup():
                         labels_tmp.append(self.training_label[x]) # append label to temporary list
                         print("appended random image/label #", i)
                         print(self.training_label[x], "#", i)
-                        i += 1
+                        i += 1 
             
             ### CHECK RANDOM NUMBERS
             # print("random numbers:", check_rand_num)
