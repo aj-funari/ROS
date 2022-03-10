@@ -160,7 +160,7 @@ def test():
     print(("ResNet152 output:", y))
 
 if __name__ == '__main__':
-    start_time = time.perf_counter()
+    start_time = time.time
     ### TEST RESNET ARCHITECTURE
     # test()
 
@@ -178,15 +178,9 @@ if __name__ == '__main__':
     DATA.folder_img_loader()
     DATA.parse_folder()
 
-    ### NUMBER OF IMAGES IN TRAINING SET
-    # print(len(DATA.trainloader))
-
     ### CREATE EPOCHS
     DATA.rand_batches_labels(10)
-    # print(len(DATA.epoch))    # --> 10 
-    # for batch in DATA.epoch:  
-    #     print(len(batch))     # --> 0?
-
+    
     ### FEED DATA THROUGH NEURAL NETWORK
     net = ResNet50(img_channels=3, num_classes=2)
     
@@ -195,10 +189,11 @@ if __name__ == '__main__':
     # print(out, "\nTEST TENSOR THROUGH NEURAL NETWORK!")
 
     tensor = DATA.trainloader[0]  # [1, 3, 224 , 224]
-    print("ROS IMAGE THROUGH NEURAL NETWORK!")
+    print("\n------------------------------------------------------------")
+    print("ROS IMAGE THROUGH NEURAL NETWORK")
     print(net(tensor))
 
-    print("TRAIN FULL NEURAL NETWORK!")
+    print("\nTRAINING NEURAL NETWORK")
     x = 1
     num = 1
     x_error = 0
@@ -206,29 +201,40 @@ if __name__ == '__main__':
     lst = []
     for batch in DATA.batch_epoch:  # loop through 10 batches in epoch
         for image in batch:   # for each image in batch
-            start_time = time.perf_counter()
+            total_time = time.clock_gettime(time.CLOCK_REALTIME)
+            start_time = time.clock_gettime(time.CLOCK_REALTIME)
             image = image.reshape(1, 3, 224, 224)
 
             ### CALCULATING ERROR & ACCURACY
             out = net(image)
-            lst = out.tolist()
-            target = DATA.training_label[x]
-
-            x_error = float(target[0]) - float(out[0][0])
-            z_error = float(target[1]) - float(out[0][1])
-            print("x error:", x_error)
-            print("z_error:", z_error)
-
-            print("x accurracy:", round(x_error * 100, 2), "%")
-            print("z accurracy:", round(z_error * 100, 2), "%")
+            tmp = out.tolist()
+            x_target = float(DATA.training_label[x][0])
+            z_target = float(DATA.training_label[x][1])
+            x_out = float(tmp[0][0])
+            z_out =float(tmp[0][1])            
+            x_error = x_target - x_out
+            z_error = z_target - z_out
+            x_acc = 100 - round(x_error * 100, 2)
+            z_acc = 100 - round(z_error * 100, 2)
+            format_x_acc = "{:.2f}".format(x_acc)
+            format_z_acc = "{:.2f}".format(z_acc)
 
             ### PRINTING TRAINING TIME OF NEURAL NETWORK
             x += 1
-            if x == len(batch):
-                print("Just finished training batch #", num)
-                print("Training time of batch #", num, (start_time-time.perf_counter()))
+            if x == DATA.batch_size:
+                print("------------------------------------------------------------")
+                print("BATCH #", num)
+                print("RUMTIME #", start_time - time.clock_gettime(time.CLOCK_REALTIME))
+                print("LAST X ERROR(X POSITION OF ROBOT):", x_error)
+                print("LAST Z ERROR(ANGULAR POSITION OF ROBOT):", z_error)
+                print("X ACCURRACY:", format_x_acc, "%")
+                print("Z_ACCURRACY:", format_z_acc, "%")
+                print("------------------------------------------------------------\n")
+                
                 time.sleep(5)
+                start_time = 0
                 num += 1
-                x = x - len(batch)
+                x -= DATA.batch_size
+            
 
-    print("Neural Network training time: ", (time.perf_counter() - start_time))
+    print("Neural Network training time: ", (total_time - time.clock_gettime(time.CLOCK_REALTIME)))

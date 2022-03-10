@@ -14,11 +14,13 @@ class one_folder_setup():
         self.training_label = []
         self.batch_epoch = []
         self.label_epoch = []
+        self.batch_size = 0
 
     def folder_img_loader(self):
         DATADIR = '/home/aj/catkin_ws/src/ros_gazebo/scripts/images/left'
 
-        print("Setting up data for neural network!")
+        print("--------------------------------------")
+        print("SETTING UP DATA FOR NEURAL NETWORK")
 
         for img in os.listdir(DATADIR):
             try:
@@ -62,32 +64,24 @@ class one_folder_setup():
         return(img)
 
     def rand_batches_labels (self, num_batch):
-        batch_size = int(len(self.trainloader) / num_batch)
+        self.batch_size = int(len(self.trainloader) / num_batch)
         batches_tmp = []
         labels_tmp = []
         rand_start = 0
-        rand_end = batch_size
+        rand_end = self.batch_size
         check_rand_num = {}
  
         for i in range(num_batch):
-            for j in range(batch_size):
-                i = 1
-                while len(check_rand_num) < batch_size:
+            for j in range(self.batch_size):
+                while len(check_rand_num) < self.batch_size:
                     x = random.randrange(rand_start, rand_end)
                     if x not in check_rand_num.keys():  # if random number is not in dictorary, add random image
                         check_rand_num[x] = x # add num to check rand num list 
                         batches_tmp.append(self.trainloader[x])  # append imgage to temporary list
                         labels_tmp.append(self.training_label[x]) # append label to temporary list
-                        print("appended random image/label #", i)
-                        print(self.training_label[x], "#", i)
-                        i += 1 
             
-            ### CHECK RANDOM NUMBERS
-            # print("random numbers:", check_rand_num)
-            # print("sorted number:", sorted(check_rand_num))
-            
-            rand_start += batch_size
-            rand_end += batch_size
+            rand_start += self.batch_size
+            rand_end += self.batch_size
             
             ### ADD BATCHES OF IMAGES TOGETHER
             self.batch_epoch += batches_tmp
@@ -103,10 +97,9 @@ class one_folder_setup():
 
         ###  PRINT INFORMATION
         print("number of batches", num_batch)
-        print("size of each batch in batch epoch:", batch_size)
+        print("size of each batch in batch epoch:", self.batch_size)
         print("size of batch epoch:", len(self.batch_epoch))
-        # print("size of each batch in label epoch:",len(self.label_epoch[0]) )  
-        # print("size of label epoch:", len(self.label_epoch))  
+        print("--------------------------------------")  
 
 if __name__ == "__main__":
     DATA = one_folder_setup()
