@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from lib2to3.pgen2.token import STAR
+from os import stat
 import time
 import torch
 import torch.nn as nn
@@ -173,7 +175,7 @@ if __name__ == '__main__':
     DATA.parse_folder()
 
     ### CREATE EPOCHS
-    DATA.rand_batches_labels(10)
+    DATA.rand_batches_labels(50)
     
     ### FEED DATA THROUGH NEURAL NETWORK
     net = ResNet50(img_channels=3, num_classes=2)
@@ -211,31 +213,32 @@ if __name__ == '__main__':
                 z_target = float(DATA.training_label[x][1])
                 z_target = torch.as_tensor(z_target)
             
-                print("x_target:", x_target)
-                print("z_target:", z_target)
+                # print("x_target:", x_target)
+                # print("z_target:", z_target)
 
             ### MEAN SQUARED ERROR
-            x_out = torch.as_tensor(output[0][0])
-            print("x_out:", x_out)
-            z_out = torch.as_tensor(output[0][1])
-            print("z_out:", z_out)
+            # x_out = torch.as_tensor(output[0][0])
+            # print("x_out:", x_out)
+            # z_out = torch.as_tensor(output[0][1])
+            # print("z_out:", z_out)
 
-            x_mae_loss = nn.L1Loss()
-            x_loss = x_mae_loss(x_out, x_target)
-            x_loss.backward()
+            # x_mae_loss = nn.L1Loss()
+            # x_loss = x_mae_loss(x_out, x_target)
+            # x_loss.backward()
 
-            z_mae_loss = nn.L1Loss()
-            z_loss = z_mae_loss(z_out, z_target)
-            z_loss.backward()
+            # z_mae_loss = nn.L1Loss()
+            # z_loss = z_mae_loss(z_out, z_target)
+            # z_loss.backward()
 
             ### PRINTING TRAINING TIME OF NEURAL NETWORK
             x += 1
             if x == DATA.batch_size:
                 print("------------------------------------------------------------")
                 print("BATCH #", num)
-                print("RUMTIME #", start_time - time.clock_gettime(time.CLOCK_REALTIME))
-                print("X_LOSS:", x_loss)
-                print("Z_LOSS:", z_loss)
+                print("RUMTIME #", time.clock_gettime(time.CLOCK_REALTIME) - start_time)
+                print(" start time:", start_time)
+                print(" end time:", time.clock_gettime(time.CLOCK_REALTIME))
+
                 # print("X ERROR:", (x_accuracy/DATA.batch_size)*100)
                 # print("Z ERROR:", (z_accuracy/DATA.batch_size)*100)
                 print("------------------------------------------------------------\n")
