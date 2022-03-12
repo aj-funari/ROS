@@ -1,15 +1,9 @@
 #!/usr/bin/env python
 
-import re
-import cv2
 import time
-import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-import matplotlib.pyplot as plt
 from one_folder_setup import one_folder_setup
-import time
 
 class block(nn.Module):
     def __init__(self, in_channels, intermediate_channels, identity_downsample=None, stride=1):
@@ -196,28 +190,43 @@ if __name__ == '__main__':
     print("\nTRAINING NEURAL NETWORK")
     x = 1
     num = 1
-    x_error = 0
-    z_error = 0
     lst = []
+    x_accuracy = 0
+    z_accuracy = 0
+
     for batch in DATA.batch_epoch:  # loop through 10 batches in epoch
         for image in batch:   # for each image in batch
             total_time = time.clock_gettime(time.CLOCK_REALTIME)
             start_time = time.clock_gettime(time.CLOCK_REALTIME)
             image = image.reshape(1, 3, 224, 224)
 
-            ### CALCULATING ERROR & ACCURACY
-            out = net(image)
-            tmp = out.tolist()
-            x_target = float(DATA.training_label[x][0])
-            z_target = float(DATA.training_label[x][1])
-            x_out = float(tmp[0][0])
-            z_out =float(tmp[0][1])            
-            x_error = x_target - x_out
-            z_error = z_target - z_out
-            x_acc = 100 - round(x_error * 100, 2)
-            z_acc = 100 - round(z_error * 100, 2)
-            format_x_acc = "{:.2f}".format(x_acc)
-            format_z_acc = "{:.2f}".format(z_acc)
+            ### CALCULATING ERROR
+            output = net(image)
+            output = output.tolist()
+
+            if DATA.training_label[x][0] != "" and DATA.training_label[x][1] != "":
+               
+                x_target = float(DATA.training_label[x][0])
+                x_target = torch.as_tensor(x_target)
+                z_target = float(DATA.training_label[x][1])
+                z_target = torch.as_tensor(z_target)
+            
+                print("x_target:", x_target)
+                print("z_target:", z_target)
+
+            ### MEAN SQUARED ERROR
+            x_out = torch.as_tensor(output[0][0])
+            print("x_out:", x_out)
+            z_out = torch.as_tensor(output[0][1])
+            print("z_out:", z_out)
+
+            x_mae_loss = nn.L1Loss()
+            x_loss = x_mae_loss(x_out, x_target)
+            x_loss.backward()
+
+            z_mae_loss = nn.L1Loss()
+            z_loss = z_mae_loss(z_out, z_target)
+            z_loss.backward()
 
             ### PRINTING TRAINING TIME OF NEURAL NETWORK
             x += 1
@@ -225,16 +234,19 @@ if __name__ == '__main__':
                 print("------------------------------------------------------------")
                 print("BATCH #", num)
                 print("RUMTIME #", start_time - time.clock_gettime(time.CLOCK_REALTIME))
-                print("LAST X ERROR(X POSITION OF ROBOT):", x_error)
-                print("LAST Z ERROR(ANGULAR POSITION OF ROBOT):", z_error)
-                print("X ACCURRACY:", format_x_acc, "%")
-                print("Z_ACCURRACY:", format_z_acc, "%")
+                print("X_LOSS:", x_loss)
+                print("Z_LOSS:", z_loss)
+                # print("X ERROR:", (x_accuracy/DATA.batch_size)*100)
+                # print("Z ERROR:", (z_accuracy/DATA.batch_size)*100)
                 print("------------------------------------------------------------\n")
                 
                 time.sleep(5)
                 start_time = 0
                 num += 1
                 x -= DATA.batch_size
+                x_accuracy = 0
+                z_accuracy = 0
             
 
     print("Neural Network training time: ", (total_time - time.clock_gettime(time.CLOCK_REALTIME)))
+    

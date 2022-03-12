@@ -1,12 +1,18 @@
 #!/usr/bin/env python
 
+import os
+import cv2
 import rospy
 from geometry_msgs.msg import Twist # message type for cmd_vel
 from sensor_msgs.msg import Image # message type for image
-import cv2 
-import os
 from cv_bridge import CvBridge, CvBridgeError
-from datetime import datetime 
+from datetime import datetime
+from CNN import ResNet
+from CNN import block
+
+img_channels = 3
+num_classes = 10
+net = ResNet(block, [3,4,6,3], img_channels, num_classes)
 
 bridge = CvBridge()
 
@@ -21,6 +27,7 @@ class data_recorder(object):
         self.img_left = rospy.Subscriber('/front/left/image_raw', Image, self.left_img_callback)
         self.img_right = rospy.Subscriber('/front/right/image_raw', Image, self.right_img_callback)
         self.count = 0
+        self.training_data = []
 
     def format(self, string):
         msg = string.split()
@@ -55,7 +62,10 @@ class data_recorder(object):
             # Convert ROS Image message to OpenCV2
             cv2_img = bridge.imgmsg_to_cv2(image, desired_encoding='rgb8')
             self.left_image = cv2_img
-            # print(self.left_image)
+            # Feed Image through Neural Network
+            out = ResNet(cv2_img)
+            self.training_data.append(out)
+
         except CvBridgeError as e:
             pass
 
@@ -72,3 +82,5 @@ class data_recorder(object):
 if __name__ =='__main__':
     data_recorder()
     rospy.spin()
+
+# subscribe to node, collect image, feed through neural network, send output to publisher

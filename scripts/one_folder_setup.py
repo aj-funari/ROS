@@ -3,10 +3,7 @@
 import os
 import cv2
 import torch
-import torchvision
 import random
-import numpy as np
-import matplotlib.pyplot as plt
 
 class one_folder_setup():
     def __init__(self):
@@ -31,31 +28,37 @@ class one_folder_setup():
                 self.trainloader.append(tensor)
             
             except Exception as e:
-                pass 
+                pass
 
     def parse_folder(self):
         DATADIR = '/home/aj/catkin_ws/src/ros_gazebo/scripts/images/left'
-        # count = 0
+        count = 0
 
         for label in os.listdir(DATADIR):
-            label = label.split('-') 
+            label = label.split('-')
+            label = label[: 2]
+
             if len(label) == 6:  # negative x and z coordinates
                 x = '-' + label[1]
                 z = '-' + label[3]
                 action = [x,z]
                 self.training_label.append(action)
+                count = count + 1
 
             elif len(label) == 5:  # negative z coordinate
                 x = label[0]
                 z = '-' + label[2]
                 action = [x,z]
                 self.training_label.append(action)
+                count = count + 1
             
             else:
                 x = label[0]
                 z = label[1]
                 action = [x,z]
                 self.training_label.append(action)
+                count = count + 1
+        print("labels counted:", count)
 
     def resize(self, img): # image input size = 768x1024
         dim = (224, 224) # rescale down to 224x224
