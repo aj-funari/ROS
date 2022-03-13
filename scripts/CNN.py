@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from lib2to3.pgen2.token import STAR
 from os import stat
 import time
 import torch
@@ -86,7 +85,7 @@ class ResNet(nn.Module):  # ResNet50 = [3, 4, 6, 3]
         self.fc = nn.Linear(512*4, num_classes)
 
     def forward(self, x):
-        x = self.conv1(x)
+        x = self.conv1(x.float())
         x = self.bn1(x)
         self.relu(x)
         x = self.maxpool(x)
@@ -130,13 +129,13 @@ class ResNet(nn.Module):  # ResNet50 = [3, 4, 6, 3]
 
         return nn.Sequential(*layers)  # * --> will unpack list so PyTorch knows each layers come after another
 
-def ResNet50(img_channels=3, num_classes=1000):
+def ResNet50(img_channels=3, num_classes=2):
     return(ResNet(block, [3,4,6,3], img_channels, num_classes))
 
-def ResNet101(img_channels=3, num_classes=1000):
+def ResNet101(img_channels=3, num_classes=2):
     return(ResNet(block, [3,4,23,3], img_channels, num_classes))
 
-def ResNet152(img_channels=3, num_classes=1000):
+def ResNet152(img_channels=3, num_classes=2):
     return(ResNet(block, [3,8,36,3], img_channels, num_classes))
 
 def test():
@@ -252,4 +251,5 @@ if __name__ == '__main__':
             
 
     print("Neural Network training time: ", (total_time - time.clock_gettime(time.CLOCK_REALTIME)))
+    print("FINISHED TRAINING NEURAL NETWORK!")
     

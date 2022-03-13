@@ -1,0 +1,19 @@
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+  <!-- This file is an example that can be included from jackal.urdf.xacro
+       by setting the JACKAL_URDF_EXTRAS environment variable to the full
+       path of this file. -->
+
+  <xacro:camera_mount prefix="front" tilt="0.0"/>
+  <joint name="front_camera_mount_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="front_mount" />
+    <child link="front_camera_mount" />
+  </joint>
+  <xacro:BB2-08S2C-38 frame="front_camera" name="front" />
+  <joint name="front_camera_bracket_joint" type="fixed">
+    <origin xyz="0.007 0 0.02450" rpy="0 0 0" />
+    <parent link="front_camera_beam" />
+    <child link="front_camera" />
+  </joint>
+
+</robot>
