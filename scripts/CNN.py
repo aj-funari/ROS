@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from os import stat
 import time
 import torch
 import torch.nn as nn
@@ -178,6 +177,10 @@ if __name__ == '__main__':
     
     ### FEED DATA THROUGH NEURAL NETWORK
     net = ResNet50(img_channels=3, num_classes=2)
+
+    ### MOVE TRAINING TO GPU
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    net.to(device)
     
     test_tensor = torch.randn(1, 3, 224, 224)  # color dCn  imension, height, width
     # out = (net(test_tensor))
@@ -189,45 +192,50 @@ if __name__ == '__main__':
     print(net(tensor))
 
     print("\nTRAINING NEURAL NETWORK")
-    x = 1
+    x = 0
     num = 1
     lst = []
     x_accuracy = 0
     z_accuracy = 0
+    total_loss = 0
+
+    optimizer = torch.optim.SGD(net.parameters(), lr=1e-3, weight_decay=0.001)
 
     for batch in DATA.batch_epoch:  # loop through 10 batches in epoch
         for image in batch:   # for each image in batch
+            image.to(device)
             total_time = time.clock_gettime(time.CLOCK_REALTIME)
             start_time = time.clock_gettime(time.CLOCK_REALTIME)
             image = image.reshape(1, 3, 224, 224)
-
-            ### CALCULATING ERROR
+            
+            ### FEED IMAGE THROUGH NEURAL NETWORK
             output = net(image)
-            output = output.tolist()
 
             if DATA.training_label[x][0] != "" and DATA.training_label[x][1] != "":
                
-                x_target = float(DATA.training_label[x][0])
-                x_target = torch.as_tensor(x_target)
-                z_target = float(DATA.training_label[x][1])
-                z_target = torch.as_tensor(z_target)
-            
-                # print("x_target:", x_target)
-                # print("z_target:", z_target)
+                # x_target = float(DATA.training_label[x][0])
+                # x_target = torch.as_tensor(x_target)
+                # z_target = float(DATA.training_label[x][1])
+                # z_target = torch.as_tensor(z_target)
+
+                x_target = torch.as_tensor(float(DATA.training_label[x][0]))
+                z_target = torch.as_tensor(float(DATA.training_label[x][1]))
+                x_target, z_target = x_target.to(device), z_target.to(device)
 
             ### MEAN SQUARED ERROR
-            # x_out = torch.as_tensor(output[0][0])
-            # print("x_out:", x_out)
-            # z_out = torch.as_tensor(output[0][1])
-            # print("z_out:", z_out)
+            x_mae_loss = nn.L1Loss()
+            z_mae_loss = nn.L1Loss()
+            x_out = torch.as_tensor(output[0][0])
+            z_out = torch.as_tensor(output[0][1])
+            x_loss = x_mae_loss(x_out, x_target)
+            z_loss = z_mae_loss(z_out, z_target)
+            loss = x_loss + z_loss  # backpropogation stays separate for images
+            optimizer.zero_grad()  # clears the optimizer/gradient
+            loss.backward()
+            optimizer.step()
 
-            # x_mae_loss = nn.L1Loss()
-            # x_loss = x_mae_loss(x_out, x_target)
-            # x_loss.backward()
-
-            # z_mae_loss = nn.L1Loss()
-            # z_loss = z_mae_loss(z_out, z_target)
-            # z_loss.backward()
+            ### CALCULATING TOTAL LOSS
+            total_loss += float(loss)
 
             ### PRINTING TRAINING TIME OF NEURAL NETWORK
             x += 1
@@ -237,6 +245,7 @@ if __name__ == '__main__':
                 print("RUMTIME #", time.clock_gettime(time.CLOCK_REALTIME) - start_time)
                 print(" start time:", start_time)
                 print(" end time:", time.clock_gettime(time.CLOCK_REALTIME))
+                print(" loss:", total_loss/DATA.batch_size)
 
                 # print("X ERROR:", (x_accuracy/DATA.batch_size)*100)
                 # print("Z ERROR:", (z_accuracy/DATA.batch_size)*100)
@@ -248,6 +257,7 @@ if __name__ == '__main__':
                 x -= DATA.batch_size
                 x_accuracy = 0
                 z_accuracy = 0
+                total_loss = 0
             
 
     print("Neural Network training time: ", (total_time - time.clock_gettime(time.CLOCK_REALTIME)))
