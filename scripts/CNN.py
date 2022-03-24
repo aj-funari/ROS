@@ -4,6 +4,7 @@ import time
 import torch
 import torch.nn as nn
 from one_folder_setup import one_folder_setup
+from datetime import datetime
 
 class block(nn.Module):
     def __init__(self, in_channels, intermediate_channels, identity_downsample=None, stride=1):
@@ -158,13 +159,6 @@ if __name__ == '__main__':
     ### TEST RESNET ARCHITECTURE
     # test()
 
-    ### MOVE MODEL/COMPUTATIONS TO GPU
-    # if torch.cuda.is_available():
-    #     input_batch = input_batch.to('cuda')
-
-    # with torch.no_grad():
-    #     output = model(input_batch)
-
     ### CREATE VARIABLE FOR CLASS
     DATA = one_folder_setup()
 
@@ -173,25 +167,41 @@ if __name__ == '__main__':
     DATA.parse_folder()
 
     ### CREATE EPOCHS
-    DATA.rand_batches_labels(50)
-    
-    ### FEED DATA THROUGH NEURAL NETWORK
+    DATA.rand_batches_labels(25)
+
+    print("\n-----------------------------------------------")
+    print("MOVE TRAINING TO GPU")
+    print("Hardware?", torch.cuda.get_device_name(torch.cuda.current_device()))
+    print("Is GPU available?", torch.cuda.is_available())
+    print("-----------------------------------------------")
+
+    ### CALL MODEL
     net = ResNet50(img_channels=3, num_classes=2)
 
-    ### MOVE TRAINING TO GPU
+    ### MOVE MODEL/COMPUTATIONS TO GPU
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     net.to(device)
-    
-    test_tensor = torch.randn(1, 3, 224, 224)  # color dCn  imension, height, width
-    # out = (net(test_tensor))
-    # print(out, "\nTEST TENSOR THROUGH NEURAL NETWORK!")
 
-    tensor = DATA.trainloader[0]  # [1, 3, 224 , 224]
-    print("\n------------------------------------------------------------")
-    print("ROS IMAGE THROUGH NEURAL NETWORK")
-    print(net(tensor))
+    if torch.cuda.is_available():
+        for input_batch in DATA.batch_epoch:
+            input_batch = input_batch.to('cuda')
+    with torch.no_grad():
+        output = net(input_batch)
 
-    print("\nTRAINING NEURAL NETWORK")
+    # print("\n-----------------------------------------------------")
+    # print("TEST TENSOR THROUGH NEURAL NETWORK!")
+    # test_tensor = torch.randn(1, 3, 224, 224)  # color dimension, height, width
+    # print(net(test_tensor))
+    # print("-----------------------------------------------------")
+
+    # print("\n-----------------------------------------------------")
+    # print("ROS IMAGE THROUGH NEURAL NETWORK")
+    # tensor = DATA.trainloader[0]  # [1, 3, 224 , 224]
+    # print(net(tensor))
+    # print("-----------------------------------------------------")
+
+    optimizer = torch.optim.SGD(net.parameters(), lr=1e-3, weight_decay=0.001)
+
     x = 0
     num = 1
     lst = []
@@ -199,13 +209,11 @@ if __name__ == '__main__':
     z_accuracy = 0
     total_loss = 0
 
-    optimizer = torch.optim.SGD(net.parameters(), lr=1e-3, weight_decay=0.001)
-
-    for batch in DATA.batch_epoch:  # loop through 10 batches in epoch
-        for image in batch:   # for each image in batch
-            image.to(device)
-            total_time = time.clock_gettime(time.CLOCK_REALTIME)
-            start_time = time.clock_gettime(time.CLOCK_REALTIME)
+    for input_batch in DATA.batch_epoch:  # loop through 10 batches in epoch
+        for image in input_batch:   # for each image in batch
+            image = image.to('cuda')
+            total_time = time.time()
+            start_time = time.time()
             image = image.reshape(1, 3, 224, 224)
             
             ### FEED IMAGE THROUGH NEURAL NETWORK
@@ -213,22 +221,24 @@ if __name__ == '__main__':
 
             if DATA.training_label[x][0] != "" and DATA.training_label[x][1] != "":
                
-                # x_target = float(DATA.training_label[x][0])
-                # x_target = torch.as_tensor(x_target)
-                # z_target = float(DATA.training_label[x][1])
-                # z_target = torch.as_tensor(z_target)
+                x_target = float(DATA.training_label[x][0])
+                x_target = torch.as_tensor(x_target)
+                z_target = float(DATA.training_label[x][1])
+                z_target = torch.as_tensor(z_target)
 
                 x_target = torch.as_tensor(float(DATA.training_label[x][0]))
                 z_target = torch.as_tensor(float(DATA.training_label[x][1]))
-                x_target, z_target = x_target.to(device), z_target.to(device)
+                x_target, z_target = x_target.cuda(), z_target.cuda()
 
             ### MEAN SQUARED ERROR
             x_mae_loss = nn.L1Loss()
             z_mae_loss = nn.L1Loss()
             x_out = torch.as_tensor(output[0][0])
             z_out = torch.as_tensor(output[0][1])
-            x_loss = x_mae_loss(x_out, x_target)
-            z_loss = z_mae_loss(z_out, z_target)
+            # x_loss = x_mae_loss(x_out, x_target)
+            # z_loss = z_mae_loss(z_out, z_target)
+            x_loss = x_mae_loss(x_out.cuda(), x_target.cuda())
+            z_loss = z_mae_loss(z_out.cuda(), z_target.cuda())
             loss = x_loss + z_loss  # backpropogation stays separate for images
             optimizer.zero_grad()  # clears the optimizer/gradient
             loss.backward()
@@ -240,16 +250,13 @@ if __name__ == '__main__':
             ### PRINTING TRAINING TIME OF NEURAL NETWORK
             x += 1
             if x == DATA.batch_size:
-                print("------------------------------------------------------------")
+                print("--------------------------------")
                 print("BATCH #", num)
-                print("RUMTIME #", time.clock_gettime(time.CLOCK_REALTIME) - start_time)
+                print("RUMTIME #", time.time() - start_time)
                 print(" start time:", start_time)
-                print(" end time:", time.clock_gettime(time.CLOCK_REALTIME))
+                print(" end time:", time.time())
                 print(" loss:", total_loss/DATA.batch_size)
-
-                # print("X ERROR:", (x_accuracy/DATA.batch_size)*100)
-                # print("Z ERROR:", (z_accuracy/DATA.batch_size)*100)
-                print("------------------------------------------------------------\n")
+                print("--------------------------------\n")
                 
                 time.sleep(5)
                 start_time = 0
@@ -258,8 +265,7 @@ if __name__ == '__main__':
                 x_accuracy = 0
                 z_accuracy = 0
                 total_loss = 0
-            
 
-    print("Neural Network training time: ", (total_time - time.clock_gettime(time.CLOCK_REALTIME)))
+    print("Neural Network training time: ", (time.time() - total_time))
     print("FINISHED TRAINING NEURAL NETWORK!")
     

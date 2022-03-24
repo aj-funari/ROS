@@ -16,7 +16,7 @@ class one_folder_setup():
     def folder_img_loader(self):
         DATADIR = '/home/aj/catkin_ws/src/ros_gazebo/scripts/images/left'
 
-        print("--------------------------------------")
+        print("-------------------------------------")
         print("SETTING UP DATA FOR NEURAL NETWORK")
 
         for img in os.listdir(DATADIR):
@@ -33,31 +33,34 @@ class one_folder_setup():
     def parse_folder(self):
         DATADIR = '/home/aj/catkin_ws/src/ros_gazebo/scripts/images/left'
         count = 0
+        cnt = 0
 
         for label in os.listdir(DATADIR):
+            cnt += 1
+            print(cnt)
             label = label.split('-')
-            label = label[: 2]
+
+            if len(label) == 4:  # positive x and z coordinates
+                x = label[0]
+                z = label[1]
+                action = [x,z]
+        
+            if len(label) == 5:  # negative x or z coordinate
+                if label[0] == '': # -x
+                    x = '-' + label[1]
+                    z = label[2]
+                if label[1] == '': # -z
+                    x = label[0]
+                    z = '-' + label[2]
 
             if len(label) == 6:  # negative x and z coordinates
                 x = '-' + label[1]
                 z = '-' + label[3]
-                action = [x,z]
-                self.training_label.append(action)
-                count = count + 1
 
-            elif len(label) == 5:  # negative z coordinate
-                x = label[0]
-                z = '-' + label[2]
-                action = [x,z]
-                self.training_label.append(action)
-                count = count + 1
-            
-            else:
-                x = label[0]
-                z = label[1]
-                action = [x,z]
-                self.training_label.append(action)
-                count = count + 1
+            action = [x,z]
+            self.training_label.append(action)
+            count += 1
+
         print("labels counted:", count)
 
     def resize(self, img): # image input size = 768x1024
@@ -102,7 +105,7 @@ class one_folder_setup():
         print("number of batches", num_batch)
         print("size of each batch in batch epoch:", self.batch_size)
         print("size of batch epoch:", len(self.batch_epoch))
-        print("--------------------------------------")  
+        print("-------------------------------------")  
 
 if __name__ == "__main__":
     DATA = one_folder_setup()
