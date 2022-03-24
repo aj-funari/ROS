@@ -4,7 +4,6 @@ import time
 import torch
 import torch.nn as nn
 from one_folder_setup import one_folder_setup
-from datetime import datetime
 
 class block(nn.Module):
     def __init__(self, in_channels, intermediate_channels, identity_downsample=None, stride=1):
@@ -188,18 +187,6 @@ if __name__ == '__main__':
     with torch.no_grad():
         output = net(input_batch)
 
-    # print("\n-----------------------------------------------------")
-    # print("TEST TENSOR THROUGH NEURAL NETWORK!")
-    # test_tensor = torch.randn(1, 3, 224, 224)  # color dimension, height, width
-    # print(net(test_tensor))
-    # print("-----------------------------------------------------")
-
-    # print("\n-----------------------------------------------------")
-    # print("ROS IMAGE THROUGH NEURAL NETWORK")
-    # tensor = DATA.trainloader[0]  # [1, 3, 224 , 224]
-    # print(net(tensor))
-    # print("-----------------------------------------------------")
-
     optimizer = torch.optim.SGD(net.parameters(), lr=1e-3, weight_decay=0.001)
 
     x = 0
@@ -235,10 +222,10 @@ if __name__ == '__main__':
             z_mae_loss = nn.L1Loss()
             x_out = torch.as_tensor(output[0][0])
             z_out = torch.as_tensor(output[0][1])
-            # x_loss = x_mae_loss(x_out, x_target)
-            # z_loss = z_mae_loss(z_out, z_target)
-            x_loss = x_mae_loss(x_out.cuda(), x_target.cuda())
-            z_loss = z_mae_loss(z_out.cuda(), z_target.cuda())
+            x_loss = x_mae_loss(x_out, x_target)
+            z_loss = z_mae_loss(z_out, z_target)
+            # x_loss = x_mae_loss(x_out.cuda(), x_target.cuda())
+            # z_loss = z_mae_loss(z_out.cuda(), z_target.cuda())
             loss = x_loss + z_loss  # backpropogation stays separate for images
             optimizer.zero_grad()  # clears the optimizer/gradient
             loss.backward()
@@ -268,4 +255,3 @@ if __name__ == '__main__':
 
     print("Neural Network training time: ", (time.time() - total_time))
     print("FINISHED TRAINING NEURAL NETWORK!")
-    

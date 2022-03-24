@@ -6,8 +6,8 @@ from geometry_msgs.msg import Twist # message type for cmd_vel
 from sensor_msgs.msg import Image # message type for image
 from cv_bridge import CvBridge, CvBridgeError
 from one_folder_setup import one_folder_setup
-from CNN import ResNet
-from CNN import block
+from CNN_gpu import ResNet
+from CNN_gpu import block
 
 bridge = CvBridge()
 setup = one_folder_setup()
@@ -41,7 +41,13 @@ class data_recorder(object):
             img_resize = setup.resize(cv2_img)
             img_tensor = torch.from_numpy(img_resize)
             img = img_tensor.reshape(1, 3, 224, 224)
-            # print(img.shape)
+            
+            # move model/image to gpu 
+            # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            # ResNet50.to(device)
+            # img = img.to(device)
+
+            # feed image through neural network
             tensor_out = ResNet50(img)
             self.tensor_x_z_actions.append(tensor_out)
             print("actions sent to publisher:", tensor_out)
