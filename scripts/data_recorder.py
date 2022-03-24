@@ -9,8 +9,8 @@ import rospy
 from geometry_msgs.msg import Twist # message type for cmd_vel
 from sensor_msgs.msg import Image # message type for image
 from one_folder_setup import one_folder_setup
-from CNN import ResNet
-from CNN import block
+from CNN_gpu import ResNet
+from CNN_gpu import block
 
 bridge = CvBridge()
 setup = one_folder_setup()

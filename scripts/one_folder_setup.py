@@ -33,11 +33,8 @@ class one_folder_setup():
     def parse_folder(self):
         DATADIR = '/home/aj/catkin_ws/src/ros_gazebo/scripts/images/left'
         count = 0
-        cnt = 0
 
         for label in os.listdir(DATADIR):
-            cnt += 1
-            print(cnt)
             label = label.split('-')
 
             if len(label) == 4:  # positive x and z coordinates
@@ -61,7 +58,7 @@ class one_folder_setup():
             self.training_label.append(action)
             count += 1
 
-        print("labels counted:", count)
+        print("\ntotal images:", count)
 
     def resize(self, img): # image input size = 768x1024
         dim = (224, 224) # rescale down to 224x224
@@ -102,7 +99,7 @@ class one_folder_setup():
 
 
         ###  PRINT INFORMATION
-        print("number of batches", num_batch)
+        print("\nnumber of batches:", num_batch)
         print("size of each batch in batch epoch:", self.batch_size)
         print("size of batch epoch:", len(self.batch_epoch))
         print("-------------------------------------")  

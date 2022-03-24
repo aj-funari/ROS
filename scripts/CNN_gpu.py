@@ -166,7 +166,9 @@ if __name__ == '__main__':
     DATA.parse_folder()
 
     ### CREATE EPOCHS
-    DATA.rand_batches_labels(25)
+    print("\nhow many randomized batches would you like for training?")
+    num = input()
+    DATA.rand_batches_labels(int(num))
 
     print("\n-----------------------------------------------")
     print("MOVE TRAINING TO GPU")
