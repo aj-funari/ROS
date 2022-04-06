@@ -7,7 +7,7 @@ if __name__ == "__main__":
 
     print(torch.cuda.get_device_name(0))
 
-    print(torch.version.cuda)
+    print(torch.version.cuda)  # causes error
 
     print(torch.cuda.get_arch_list())
 
